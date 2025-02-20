@@ -1,7 +1,7 @@
 name: React-Django CI/CD
 on: 
   push: 
-    branches: master
+    branches: main
     # paths-ignore:
     #   - ./github/workflows/*
   workflow_dispatch:
