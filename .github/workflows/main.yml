@@ -15,7 +15,7 @@ permissions:
 jobs:
   run-reusable-workflow:
     name: "React CI/CD"
-    uses: dhruv-development/resuable_workflows/.github/workflows/react-ci-cd.yml@main
+    uses: dhruv-development/reusable_workflows/.github/workflows/react-ci-cd.yml@main
     with:
       role-to-assume: "arn:aws:iam::410454990341:role/GitHubActionsRole"
       AWS_REGION: "us-east-2"
