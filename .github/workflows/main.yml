@@ -1,57 +1,27 @@
-name: React-Django CI/CD
+name: React CI/CD
 on: 
-  push: 
-    branches: main
-    # paths-ignore:
-    #   - ./github/workflows/*
-  workflow_dispatch:
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code 
-        uses: actions/checkout@v4
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-          aws-region: ${{secrets.AWS_REGION}}
-      - name: Login to ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
-      - name: Build, tag and push image to ecr
-        id: build
-        env:
-          ECR_REGISTRY: ${{steps.ecr-login.outputs.registry}}
-          ECR_REPO: ${{secrets.ECR_REPO}}
-          IMAGE_TAG: ${{github.sha}}
-        run: |
-          docker build --no-cache -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG" >> $GITHUB_OUTPUT
-      # - name: Generate ECS Task Definition JSON
-      #   run: echo '${{ secrets.TASK_DEFINITION }}' > nodejs-task-definition.json
-      - name: Fetch Task Definition from ECS
-        run: |
-          aws ecs describe-task-definition \
-          --task-definition ${{ secrets.TASK_DEFINITION }} \
-          --query "taskDefinition" \
-          --output json | jq -c > nodejs-task-definition.json
+  # push: 
+  #   branches: main
+  #   paths-ignore:
+  #     - ./github/workflows/*
 
-      - name: Fill new image to Task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: nodejs-task-definition.json
-          container-name: ${{secrets.CONTAINER_NAME}}  
-          image: ${{steps.build.outputs.image}}
-      - name: Deploy to AWS ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{secrets.SERVICE}}
-          cluster: ${{secrets.CLUSTER}}
-          wait-for-service-stability: true
-      
-      
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  actions: read
+
+jobs:
+  run-reusable-workflow:
+    name: "React CI/CD"
+    uses: dhruv-development/react_django_demo_app/.github/workflows/react-ci-cd.yml@main
+    with:
+      role-to-assume: "arn:aws:iam::410454990341:role/GitHubActionsRole"
+      AWS_REGION: "us-east-2"
+      ECR_REPO: "react-new"
+      TASK_DEFINITION: "react-django-task-definition"
+      CONTAINER_NAME: "react-django"
+      CLUSTER: "react-django"
+      SERVICE: "react-django-service"
+      S3_Bucket: "react-bucket-v1"
