@@ -22,6 +22,6 @@ jobs:
       ECR_REPO: "react-new"
       TASK_DEFINITION: "react-django-task-definition"
       CONTAINER_NAME: "react-django"
-      CLUSTER: "react-django"
+      CLUSTER: "DevCluster"
       SERVICE: "react-django-service"
       S3_Bucket: "react-bucket-v1"
